@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <malloc.h>
 
 DWORD WINAPI ThreadFunction(LPVOID param) {
 	for (INT i = 0; i < 100; ++i) {
@@ -19,52 +20,65 @@ DWORD WINAPI ThreadFunction(LPVOID param) {
 //    return 0;
 //}
 
-VOID foo(LPCWSTR path, INT offset) {
+VOID foo(LPCTSTR path/*, INT offset*/) {
 	WIN32_FIND_DATA fd;
 	TCHAR mask[MAX_PATH];
 	_tcscpy_s(mask, MAX_PATH, path);
 	_tcscat_s(mask, MAX_PATH, _T("\\*.*"));
-	HANDLE hFind = FindFirstFile(mask, &fd);
-	do {
+	FindFirstFile(mask, &fd);
+
+	HANDLE hFind = CreateFile(
+		path,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL, 
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	//do {
 		//Sleep(50);
-		if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
-			continue;
-		}
+		//if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
+			//continue;
+		//}
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			for (INT i = 0; i < offset * 2; ++i) {
-				printf(" ");
-			}
-			//_tprintf(_T("%*sDIR\n"), -70 + offset * 2, fd.cFileName);
+			//for (INT i = 0; i < offset * 2; ++i) {
+			//	printf(" ");
+			//}
 			TCHAR nextPath[MAX_PATH];
 			_tcscpy_s(nextPath, MAX_PATH, path);
 			_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
 			_tcscat_s(nextPath, MAX_PATH, _T("\\"));
-			foo(nextPath, offset + 1);
+			foo(nextPath/*, offset + 1*/);
 		}
 		else {
-			for (int i = 0; i < offset * 2; ++i) {
-				printf(" ");
-			}
-			ULARGE_INTEGER ul;
-			ul.HighPart = fd.nFileSizeHigh;
-			ul.LowPart = fd.nFileSizeLow;
-			ULONGLONG fileSize = ul.QuadPart;
+			//for (int i = 0; i < offset * 2; ++i) {
+			//	printf(" ");
+			//}
+			//ULARGE_INTEGER ul;
+			//ul.HighPart = fd.nFileSizeHigh;
+			//ul.LowPart = fd.nFileSizeLow;
+			//ULONGLONG fileSize = ul.QuadPart;
 
-			LPVOID buffer[1024];
-			DWORD bufferSize = (unsigned)_countof(buffer);
+			DWORD fileLenght = GetFileSize(hFind, NULL);
+			DWORD bufferSize = (fileLenght + 1) * (sizeof(TCHAR));
+			LPTSTR buffer = (LPTSTR)malloc(bufferSize);
 			DWORD readDataSize = 0;
-			DWORD count = fileSize / bufferSize;
-			for (int i = 0; i < count; i++)
-			{
-				SetFilePointer(hFind, bufferSize * i, 0, FILE_BEGIN);
-				ReadFile(hFind, buffer, bufferSize, &readDataSize, NULL); 
+			//DWORD count = fileSize / bufferSize;
+			//for (int i = 0; i < count; i++)
+			//{
+				SetFilePointer(hFind, 0, 0, FILE_BEGIN);
+				ReadFile(hFind, buffer, bufferSize - 1, &readDataSize, NULL);
 				_tprintf(_T("%s"), buffer);
-			}
+			//}
 			CloseHandle(hFind);
 
-			_tprintf(_T("%*s%ul\n"), -70 + offset * 2, fd.cFileName, fileSize);
+			//_tprintf(_T("%*s%ul\n"), -70 + offset * 2, fd.cFileName, fileSize);
 		}
-	} while (FindNextFile(hFind, &fd));
+		//} while (FindNextFile(hFind, &fd));
+	}
 }
 
 int main() {
@@ -90,6 +104,6 @@ int main() {
 
    TerminateThread(hThread, 0);*/
 
-
+	system("pause");
 	return 0;
 }

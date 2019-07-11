@@ -19,7 +19,7 @@ namespace TaskMan
     public partial class MainForm : Form
     {
         private List<ProcessInfo> processesInfo;
-        private System.Threading.Timer timer;
+        private System.Timers.Timer timer;
 
         public MainForm()
         {
@@ -29,21 +29,22 @@ namespace TaskMan
 
         private void Init()
         {
-            timer = new System.Threading.Timer(CallBack, null, 0, 8000);
-        }
+            timer = new System.Timers.Timer();
+            timer.Interval = 2000;
+            timer.Elapsed += (n, m) => {
+                LoadProcessesInfo();
+            };
+            timer.Start();
 
-        private void CallBack(object state)
-        {
-            LoadProcessesInfo();
         }
 
         private void LoadProcessesInfo()
         {
-            //this.Invoke(new MethodInvoker(() => this.reportButton.Enabled = false)); // Программа вылетает при использовании этой конструкции. Во время дебага всё ОК.
-            this.reportButton.Enabled = false;
+            this.Invoke(new MethodInvoker(() => this.reportButton.Enabled = false)); // Программа вылетает при использовании этой конструкции. Во время дебага всё ОК.
+            //this.reportButton.Enabled = false;
             LoadProcesses();
-            //this.Invoke(new MethodInvoker(() => this.reportButton.Enabled = true));
-            this.reportButton.Enabled = true;
+            this.Invoke(new MethodInvoker(() => this.reportButton.Enabled = true));
+            //this.reportButton.Enabled = true;
             this.Invoke(new MethodInvoker(LoadListView));
         }
 

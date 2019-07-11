@@ -121,6 +121,7 @@
             // 
             // reportButton
             // 
+            this.reportButton.Enabled = false;
             this.reportButton.Location = new System.Drawing.Point(713, 12);
             this.reportButton.Name = "reportButton";
             this.reportButton.Size = new System.Drawing.Size(75, 23);

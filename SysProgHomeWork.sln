@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Finder", "Finder\Finder.vcxproj", "{50F4D483-5632-412A-82FA-5055D7FC50C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager", "F:\Документы\ДЗ\Системное программирование\1.06.2019\1\TaskMan1.1\TaskMan\TaskManager.csproj", "{AC0E65C9-2478-4F57-9B86-7D8E94A58B2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager", "TaskMan\TaskManager.csproj", "{AC0E65C9-2478-4F57-9B86-7D8E94A58B2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
