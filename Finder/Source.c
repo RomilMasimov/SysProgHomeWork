@@ -20,40 +20,34 @@ DWORD WINAPI ThreadFunction(LPVOID param) {
 //    return 0;
 //}
 
-VOID foo(LPCTSTR path/*, INT offset*/) {
+VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
 	WIN32_FIND_DATA fd;
 	TCHAR mask[MAX_PATH];
 	_tcscpy_s(mask, MAX_PATH, path);
 	_tcscat_s(mask, MAX_PATH, _T("\\*.*"));
-	FindFirstFile(mask, &fd);
-
-	HANDLE hFind = CreateFile(
-		path,
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		NULL, 
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
+	HANDLE hFind = FindFirstFile(path, &fd);
 
 	//do {
 		//Sleep(50);
 		//if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
 			//continue;
 		//}
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
+	//if (hFind != INVALID_HANDLE_VALUE)
+	//{
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			//for (INT i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
 			//}
-			TCHAR nextPath[MAX_PATH];
-			_tcscpy_s(nextPath, MAX_PATH, path);
-			_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
-			_tcscat_s(nextPath, MAX_PATH, _T("\\"));
-			foo(nextPath/*, offset + 1*/);
+			//TCHAR nextPath[MAX_PATH];
+			//_tcscpy_s(nextPath, MAX_PATH, path);
+			//_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
+			//_tcscat_s(nextPath, MAX_PATH, _T("\\"));
+			//Search(nextPath/*, offset + 1*/);
 		}
 		else {
+#pragma region MyRegion
+
+
 			//for (int i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
 			//}
@@ -61,31 +55,65 @@ VOID foo(LPCTSTR path/*, INT offset*/) {
 			//ul.HighPart = fd.nFileSizeHigh;
 			//ul.LowPart = fd.nFileSizeLow;
 			//ULONGLONG fileSize = ul.QuadPart;
-
-			DWORD fileLenght = GetFileSize(hFind, NULL);
-			DWORD bufferSize = (fileLenght + 1) * (sizeof(TCHAR));
-			LPTSTR buffer = (LPTSTR)malloc(bufferSize);
-			DWORD readDataSize = 0;
-			//DWORD count = fileSize / bufferSize;
-			//for (int i = 0; i < count; i++)
-			//{
-				SetFilePointer(hFind, 0, 0, FILE_BEGIN);
-				ReadFile(hFind, buffer, bufferSize - 1, &readDataSize, NULL);
-				_tprintf(_T("%s"), buffer);
-			//}
-			CloseHandle(hFind);
-
+			//SetFilePointer(hFind, 0, 0, FILE_BEGIN);
 			//_tprintf(_T("%*s%ul\n"), -70 + offset * 2, fd.cFileName, fileSize);
+#pragma endregion
+
+			LPTSTR fileText = ReadText(path);
+			BOOL cResult = Contains(fileText, searchStr);
+			if (cResult)
+			{
+				_tprintf_s("%s", path);
+			}
+
 		}
 		//} while (FindNextFile(hFind, &fd));
+	//}
+}
+
+LPTSTR ReadText(LPCTSTR path)
+{
+	HANDLE hFile = CreateFile(
+		path,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		DWORD fileLenght = GetFileSize(hFile, NULL);
+		DWORD bufferSize = (fileLenght + 1) * (sizeof(TCHAR));
+		LPTSTR buffer = (LPTSTR)calloc(fileLenght + 1, sizeof(TCHAR));
+		BOOL rfResult = ReadFile(hFile, buffer, bufferSize, NULL, NULL);
+		CloseHandle(hFile);
+
+		if (rfResult == TRUE)
+		{
+			return buffer;
+		}
 	}
+	return NULL;
+}
+
+BOOL Contains(LPCTSTR str1, LPCTSTR str2)
+{
+	LPTSTR result = strstr(str1, str2);
+	return result ? TRUE : FALSE;
 }
 
 int main() {
 	TCHAR path[MAX_PATH];
-	_tprintf_s(_T("Enter..> "));
-	_tscanf_s(_T("%s"), path, (unsigned)_countof(path));
-	foo(path, 0);
+	_tprintf_s(_T("Enter path..> "));
+	_tscanf_s(_T("%s"), path, sizeof(path));
+
+	TCHAR str[MAX_PATH];
+	_tprintf_s(_T("Enter search str..> "));
+	_tscanf_s(_T("%s"), str, sizeof(str));
+
+	Search(path, str);
 
    //  CreateThreadpoolWork()
    /*HANDLE hThread = CreateThread(
