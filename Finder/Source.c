@@ -3,6 +3,10 @@
 #include <tchar.h>
 #include <malloc.h>
 
+LPTSTR ReadText(LPCTSTR path);
+BOOL WriteTextLine(LPCTSTR path, LPCTSTR str);
+BOOL Contains(LPCTSTR str1, LPCTSTR str2);
+
 DWORD WINAPI ThreadFunction(LPVOID param) {
 	for (INT i = 0; i < 100; ++i) {
 		Sleep(500);
@@ -22,18 +26,21 @@ DWORD WINAPI ThreadFunction(LPVOID param) {
 
 VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
 	WIN32_FIND_DATA fd;
-	TCHAR mask[MAX_PATH];
-	_tcscpy_s(mask, MAX_PATH, path);
-	_tcscat_s(mask, MAX_PATH, _T("\\*.*"));
-	HANDLE hFind = FindFirstFile(path, &fd);
+	LPTSTR filePath = (LPTSTR)calloc(MAX_PATH, sizeof(TCHAR));
+	_tcscpy_s(filePath, MAX_PATH, path);
+	LPTSTR lastPathChar = filePath + lstrlen(filePath);
+	_tcscat_s(filePath, MAX_PATH, _T("*") /*_T("\\*.*")*/);
+	HANDLE hFind = FindFirstFile(filePath, &fd);
+	*lastPathChar = _T('\0');
 
-	//do {
+	do {
 		//Sleep(50);
-		//if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
-			//continue;
-		//}
+		if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
+			continue;
+		}
 	//if (hFind != INVALID_HANDLE_VALUE)
-	//{
+		//{
+		_tcscat_s(filePath, MAX_PATH, fd.cFileName);
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			//for (INT i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
@@ -42,12 +49,10 @@ VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
 			//_tcscpy_s(nextPath, MAX_PATH, path);
 			//_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
 			//_tcscat_s(nextPath, MAX_PATH, _T("\\"));
-			//Search(nextPath/*, offset + 1*/);
+			_tcscat_s(filePath, MAX_PATH, );
+			Search(filePath, searchStr/*, offset + 1*/);
 		}
 		else {
-#pragma region MyRegion
-
-
 			//for (int i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
 			//}
@@ -57,17 +62,21 @@ VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
 			//ULONGLONG fileSize = ul.QuadPart;
 			//SetFilePointer(hFind, 0, 0, FILE_BEGIN);
 			//_tprintf(_T("%*s%ul\n"), -70 + offset * 2, fd.cFileName, fileSize);
-#pragma endregion
 
-			LPTSTR fileText = ReadText(path);
-			BOOL cResult = Contains(fileText, searchStr);
-			if (cResult)
+			LPTSTR fileText = ReadText(filePath);
+			if (fileText != NULL)
 			{
-				_tprintf_s("%s", path);
+				BOOL cResult = Contains(fileText, searchStr);
+				if (cResult)
+				{
+					WriteTextLine("C:\\Users\\Romil\\Desktop\\result.txt", filePath);
+				}
 			}
 
 		}
-		//} while (FindNextFile(hFind, &fd));
+		*lastPathChar = _T('\0');
+		} while (FindNextFile(hFind, &fd));
+		FindClose(hFind);
 	//}
 }
 
@@ -98,6 +107,33 @@ LPTSTR ReadText(LPCTSTR path)
 	return NULL;
 }
 
+BOOL WriteTextLine(LPCTSTR path, LPCTSTR str)
+{
+	HANDLE hFile = CreateFile(
+		path,
+		GENERIC_WRITE,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		LPTSTR writeStr = (LPTSTR)calloc(lstrlen(str) + 1, sizeof(TCHAR));
+		DWORD strSize = (lstrlen(str) + 1) * (sizeof(TCHAR));
+		_tcscat_s(writeStr, strSize, str);
+		*(writeStr + lstrlen(writeStr)) = _T('\n');
+
+		SetFilePointer(hFile, 0, NULL, FILE_END);
+		BOOL wfResult = WriteFile(hFile, writeStr, strSize, NULL, NULL);
+		CloseHandle(hFile);
+
+		return wfResult;
+	}
+	return FALSE;
+}
+
 BOOL Contains(LPCTSTR str1, LPCTSTR str2)
 {
 	LPTSTR result = strstr(str1, str2);
@@ -107,13 +143,14 @@ BOOL Contains(LPCTSTR str1, LPCTSTR str2)
 int main() {
 	TCHAR path[MAX_PATH];
 	_tprintf_s(_T("Enter path..> "));
-	_tscanf_s(_T("%s"), path, sizeof(path));
-
+	_tscanf_s(_T("%s"), path, _countof(path));
+	
 	TCHAR str[MAX_PATH];
 	_tprintf_s(_T("Enter search str..> "));
-	_tscanf_s(_T("%s"), str, sizeof(str));
+	_tscanf_s(_T("%s"), str, _countof(path));
 
 	Search(path, str);
+	//WriteText(path, str);
 
    //  CreateThreadpoolWork()
    /*HANDLE hThread = CreateThread(
@@ -132,6 +169,5 @@ int main() {
 
    TerminateThread(hThread, 0);*/
 
-	system("pause");
 	return 0;
 }
