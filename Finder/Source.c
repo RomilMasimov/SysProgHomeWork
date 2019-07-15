@@ -7,7 +7,16 @@ LPTSTR ReadText(LPCTSTR path);
 BOOL WriteTextLine(LPCTSTR path, LPCTSTR str);
 BOOL Contains(LPCTSTR str1, LPCTSTR str2);
 
-DWORD WINAPI ThreadFunction(LPVOID param) {
+struct SearchParams
+{
+	LPCTSTR path;
+	LPCTSTR searchStr;
+};
+
+DWORD WINAPI StartThreadSearch(LPVOID param) {
+	//int num = *((int*)param);
+	//SearchParams params = *((SearchParams*)param);
+
 	for (INT i = 0; i < 100; ++i) {
 		Sleep(500);
 		printf("\tSecond thread: %d\n", i);
@@ -24,35 +33,71 @@ DWORD WINAPI ThreadFunction(LPVOID param) {
 //    return 0;
 //}
 
-VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
-	WIN32_FIND_DATA fd;
-	LPTSTR filePath = (LPTSTR)calloc(MAX_PATH, sizeof(TCHAR));
-	_tcscpy_s(filePath, MAX_PATH, path);
-	LPTSTR lastPathChar = filePath + lstrlen(filePath);
-	_tcscat_s(filePath, MAX_PATH, _T("*") /*_T("\\*.*")*/);
-	HANDLE hFind = FindFirstFile(filePath, &fd);
-	*lastPathChar = _T('\0');
+int main() {
+	TCHAR path[MAX_PATH];
+	_tprintf_s(_T("Enter path..> "));
+	_tscanf_s(_T("%s"), path, _countof(path));
+	
+	TCHAR str[MAX_PATH];
+	_tprintf_s(_T("Enter search str..> "));
+	_tscanf_s(_T("%s"), str, _countof(path));
 
-	do {
+	Search(path, str);
+	//WriteText(path, str);
+
+   //  CreateThreadpoolWork()
+   /*HANDLE hThread = CreateThread(
+	   NULL,
+	   0,
+	   ThreadFunction,
+	   NULL,
+	   0,
+	   NULL
+   );
+   for (int i = 0; i < 20; ++i) {
+	   Sleep(100);
+	   printf("Main thread: %d\n", i);
+   }
+   WaitForSingleObject(hThread, INFINITE);
+
+   TerminateThread(hThread, 0);*/
+
+	return 0;
+}
+
+VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/)
+{
+	WIN32_FIND_DATA fd;
+	//LPTSTR filePath = (LPTSTR)calloc(MAX_PATH, sizeof(TCHAR));
+	TCHAR filePath[MAX_PATH];
+	_tcscpy_s(filePath, MAX_PATH, path);
+	_tcscat_s(filePath, MAX_PATH, _T("*"));
+	HANDLE hFind = FindFirstFile(filePath, &fd);
+
+	do 
+	{
 		//Sleep(50);
-		if (_tcscmp(_T(".."), fd.cFileName) == 0 || _tcscmp(_T("."), fd.cFileName) == 0) {
+		if (hFind == INVALID_HANDLE_VALUE ||
+			_tcscmp(_T(".."), fd.cFileName) == 0 ||
+			_tcscmp(_T("."), fd.cFileName) == 0) 
+		{
 			continue;
 		}
 	//if (hFind != INVALID_HANDLE_VALUE)
 		//{
-		_tcscat_s(filePath, MAX_PATH, fd.cFileName);
-		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		LPTSTR nextPath = (LPTSTR)calloc(MAX_PATH, sizeof(TCHAR));
+		_tcscpy_s(nextPath, MAX_PATH, path);
+		_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+		{
 			//for (INT i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
-			//}
-			//TCHAR nextPath[MAX_PATH];
-			//_tcscpy_s(nextPath, MAX_PATH, path);
-			//_tcscat_s(nextPath, MAX_PATH, fd.cFileName);
-			//_tcscat_s(nextPath, MAX_PATH, _T("\\"));
-			_tcscat_s(filePath, MAX_PATH, );
-			Search(filePath, searchStr/*, offset + 1*/);
+			//}	
+			_tcscat_s(nextPath, MAX_PATH, _T("\\"));
+			Search(nextPath, searchStr/*, offset + 1*/);
 		}
-		else {
+		else
+		{
 			//for (int i = 0; i < offset * 2; ++i) {
 			//	printf(" ");
 			//}
@@ -63,20 +108,21 @@ VOID Search(LPCTSTR path, LPCTSTR searchStr/*, INT offset*/) {
 			//SetFilePointer(hFind, 0, 0, FILE_BEGIN);
 			//_tprintf(_T("%*s%ul\n"), -70 + offset * 2, fd.cFileName, fileSize);
 
-			LPTSTR fileText = ReadText(filePath);
+			LPTSTR fileText = ReadText(nextPath);
 			if (fileText != NULL)
 			{
 				BOOL cResult = Contains(fileText, searchStr);
+				free(fileText);
 				if (cResult)
 				{
-					WriteTextLine("C:\\Users\\Romil\\Desktop\\result.txt", filePath);
+					WriteTextLine("C:\\Users\\Romil\\Desktop\\result.txt", nextPath);
 				}
 			}
 
 		}
-		*lastPathChar = _T('\0');
-		} while (FindNextFile(hFind, &fd));
-		FindClose(hFind);
+		_tcscpy_s(filePath, MAX_PATH, path);
+	} while (FindNextFile(hFind, &fd));
+	FindClose(hFind);
 	//}
 }
 
@@ -128,6 +174,7 @@ BOOL WriteTextLine(LPCTSTR path, LPCTSTR str)
 		SetFilePointer(hFile, 0, NULL, FILE_END);
 		BOOL wfResult = WriteFile(hFile, writeStr, strSize, NULL, NULL);
 		CloseHandle(hFile);
+		free(writeStr);
 
 		return wfResult;
 	}
@@ -138,36 +185,4 @@ BOOL Contains(LPCTSTR str1, LPCTSTR str2)
 {
 	LPTSTR result = strstr(str1, str2);
 	return result ? TRUE : FALSE;
-}
-
-int main() {
-	TCHAR path[MAX_PATH];
-	_tprintf_s(_T("Enter path..> "));
-	_tscanf_s(_T("%s"), path, _countof(path));
-	
-	TCHAR str[MAX_PATH];
-	_tprintf_s(_T("Enter search str..> "));
-	_tscanf_s(_T("%s"), str, _countof(path));
-
-	Search(path, str);
-	//WriteText(path, str);
-
-   //  CreateThreadpoolWork()
-   /*HANDLE hThread = CreateThread(
-	   NULL,
-	   0,
-	   ThreadFunction,
-	   NULL,
-	   0,
-	   NULL
-   );
-   for (int i = 0; i < 20; ++i) {
-	   Sleep(100);
-	   printf("Main thread: %d\n", i);
-   }
-   WaitForSingleObject(hThread, INFINITE);
-
-   TerminateThread(hThread, 0);*/
-
-	return 0;
 }
