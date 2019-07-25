@@ -185,6 +185,7 @@ DWORD WINAPI CheckSearchStatus(struct CheckStatusParam* param)
 		}
 		if (finishedCount == count)
 		{
+			_tprintf_s(_T("\nEnter any character..>> "));
 			*(param->cliState) = 2;
 			return 0;
 		}
