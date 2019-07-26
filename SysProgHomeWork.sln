@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager", "TaskMan\Task
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copy", "Copy\Copy.csproj", "{166F8B8E-29A0-43B5-9007-815B43571198}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cryptor(XOR)", "Cryptor\Cryptor(XOR).csproj", "{7051F42A-AB38-4B52-B077-EA63C5A9BE32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,18 @@ Global
 		{166F8B8E-29A0-43B5-9007-815B43571198}.Release|x64.Build.0 = Release|Any CPU
 		{166F8B8E-29A0-43B5-9007-815B43571198}.Release|x86.ActiveCfg = Release|Any CPU
 		{166F8B8E-29A0-43B5-9007-815B43571198}.Release|x86.Build.0 = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|x64.Build.0 = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Debug|x86.Build.0 = Debug|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|x64.ActiveCfg = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|x64.Build.0 = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|x86.ActiveCfg = Release|Any CPU
+		{7051F42A-AB38-4B52-B077-EA63C5A9BE32}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
